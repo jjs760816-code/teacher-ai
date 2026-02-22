@@ -1,0 +1,1677 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>선생님의 AI 비서</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600;900&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1410;
+    --paper: #f5f0e8;
+    --cream: #ede8dc;
+    --brush: #8B4513;
+    --gold: #c9963a;
+    --sage: #6b7c5e;
+    --red: #c0392b;
+    --shadow: rgba(26,20,16,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    background-image: 
+      repeating-linear-gradient(0deg, transparent, transparent 31px, rgba(139,69,19,0.04) 31px, rgba(139,69,19,0.04) 32px);
+  }
+
+  /* Header */
+  header {
+    background: var(--ink);
+    padding: 24px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 20px var(--shadow);
+  }
+
+  .logo {
+    font-family: 'Noto Serif KR', serif;
+    font-weight: 900;
+    font-size: 1.4rem;
+    color: var(--paper);
+    letter-spacing: -0.02em;
+  }
+
+  .logo span {
+    color: var(--gold);
+  }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    background: #4caf50;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .header-right {
+    font-size: 0.8rem;
+    color: rgba(245,240,232,0.6);
+    display: flex;
+    align-items: center;
+  }
+
+  /* Tab Nav */
+  .tab-nav {
+    display: flex;
+    background: var(--cream);
+    border-bottom: 2px solid rgba(139,69,19,0.12);
+    padding: 0 40px;
+    overflow-x: auto;
+    gap: 0;
+  }
+
+  .tab-btn {
+    padding: 16px 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'Noto Serif KR', serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: rgba(26,20,16,0.45);
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    white-space: nowrap;
+    transition: all 0.2s;
+    letter-spacing: -0.01em;
+  }
+
+  .tab-btn:hover { color: var(--brush); }
+
+  .tab-btn.active {
+    color: var(--brush);
+    border-bottom-color: var(--brush);
+  }
+
+  .tab-icon { margin-right: 6px; }
+
+  /* Main Layout */
+  .main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  /* Panel */
+  .panel { display: none; animation: fadeIn 0.3s ease; }
+  .panel.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .panel-header {
+    margin-bottom: 32px;
+  }
+
+  .panel-title {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--ink);
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+
+  .panel-title .accent { color: var(--brush); }
+
+  .panel-desc {
+    font-size: 0.9rem;
+    color: rgba(26,20,16,0.55);
+    line-height: 1.6;
+  }
+
+  /* Form Elements */
+  .form-group { margin-bottom: 20px; }
+
+  label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: rgba(26,20,16,0.6);
+    margin-bottom: 8px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1.5px solid rgba(139,69,19,0.2);
+    border-radius: 8px;
+    background: white;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.9rem;
+    color: var(--ink);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--brush);
+    box-shadow: 0 0 0 3px rgba(139,69,19,0.08);
+  }
+
+  textarea { min-height: 120px; resize: vertical; line-height: 1.7; }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* Buttons */
+  .btn-primary {
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    padding: 15px 32px;
+    border-radius: 8px;
+    font-family: 'Noto Serif KR', serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: -0.01em;
+  }
+
+  .btn-primary:hover {
+    background: var(--brush);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px var(--shadow);
+  }
+
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Result Box */
+  .result-box {
+    margin-top: 32px;
+    background: white;
+    border: 1.5px solid rgba(139,69,19,0.15);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .result-header {
+    background: var(--ink);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .result-title {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 0.85rem;
+    color: var(--gold);
+    font-weight: 600;
+  }
+
+  .copy-btn {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: rgba(245,240,232,0.7);
+    padding: 5px 12px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .copy-btn:hover { background: rgba(255,255,255,0.2); color: white; }
+
+  .result-content {
+    padding: 24px;
+    font-size: 0.92rem;
+    line-height: 1.9;
+    color: var(--ink);
+    white-space: pre-wrap;
+    min-height: 100px;
+  }
+
+  .result-placeholder {
+    color: rgba(26,20,16,0.3);
+    font-style: italic;
+    text-align: center;
+    padding: 40px 20px;
+  }
+
+  /* Loading */
+  .loading-dots {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+  }
+
+  .loading-dots span {
+    width: 6px; height: 6px;
+    background: var(--gold);
+    border-radius: 50%;
+    animation: bounce 1.2s infinite;
+  }
+
+  .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bounce {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+    40% { transform: scale(1); opacity: 1; }
+  }
+
+  /* API Key section */
+  .api-section {
+    background: rgba(201,150,58,0.08);
+    border: 1.5px solid rgba(201,150,58,0.3);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 32px;
+  }
+
+  .api-section h3 {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--brush);
+  }
+
+  .api-section p {
+    font-size: 0.82rem;
+    color: rgba(26,20,16,0.6);
+    margin-bottom: 12px;
+    line-height: 1.6;
+  }
+
+  .api-input-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .api-input-row input {
+    flex: 1;
+    font-family: monospace;
+    font-size: 0.82rem;
+  }
+
+  .btn-save {
+    padding: 14px 20px;
+    background: var(--gold);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+
+  .btn-save:hover { background: var(--brush); }
+
+  /* Poem special styling */
+  .poem-result {
+    font-family: 'Noto Serif KR', serif;
+    line-height: 2.2;
+    font-size: 1rem;
+    text-align: center;
+    padding: 40px;
+    background: linear-gradient(180deg, white, var(--cream));
+  }
+
+  /* Chip tags */
+  .chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .chip {
+    padding: 6px 14px;
+    border: 1.5px solid rgba(139,69,19,0.25);
+    border-radius: 20px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+    color: rgba(26,20,16,0.65);
+  }
+
+  .chip:hover, .chip.selected {
+    background: var(--brush);
+    border-color: var(--brush);
+    color: white;
+  }
+
+  /* Warning */
+  .warning-box {
+    background: rgba(192,57,43,0.06);
+    border-left: 3px solid var(--red);
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.82rem;
+    color: rgba(26,20,16,0.65);
+    margin-top: 12px;
+    line-height: 1.6;
+  }
+
+  /* === 학생 상담 스타일 === */
+  .counsel-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+    min-height: 600px;
+  }
+
+  /* 학생 목록 사이드바 */
+  .student-sidebar {
+    background: white;
+    border: 1.5px solid rgba(139,69,19,0.15);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sidebar-header {
+    background: var(--ink);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .sidebar-title {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 0.85rem;
+    color: var(--gold);
+    font-weight: 600;
+  }
+
+  .btn-add-student {
+    background: var(--gold);
+    border: none;
+    color: white;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    line-height: 1;
+  }
+
+  .btn-add-student:hover { background: var(--brush); transform: scale(1.1); }
+
+  .student-search {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(139,69,19,0.1);
+  }
+
+  .student-search input {
+    padding: 8px 12px;
+    font-size: 0.82rem;
+    border-radius: 6px;
+  }
+
+  .student-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+  }
+
+  .student-card {
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-bottom: 4px;
+    border: 1.5px solid transparent;
+  }
+
+  .student-card:hover { background: var(--cream); }
+
+  .student-card.active {
+    background: rgba(139,69,19,0.08);
+    border-color: rgba(139,69,19,0.25);
+  }
+
+  .student-card-name {
+    font-family: 'Noto Serif KR', serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--ink);
+  }
+
+  .student-card-meta {
+    font-size: 0.75rem;
+    color: rgba(26,20,16,0.45);
+    margin-top: 2px;
+  }
+
+  .student-card-badge {
+    display: inline-block;
+    background: var(--sage);
+    color: white;
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  /* 상담 상세 영역 */
+  .counsel-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .detail-card {
+    background: white;
+    border: 1.5px solid rgba(139,69,19,0.15);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .detail-card-header {
+    background: var(--cream);
+    padding: 12px 18px;
+    border-bottom: 1px solid rgba(139,69,19,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .detail-card-title {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--brush);
+  }
+
+  .detail-card-body {
+    padding: 18px;
+  }
+
+  /* 상담 기록 리스트 */
+  .record-list { display: flex; flex-direction: column; gap: 12px; }
+
+  .record-item {
+    border: 1.5px solid rgba(139,69,19,0.12);
+    border-radius: 8px;
+    padding: 14px 16px;
+    background: var(--paper);
+    position: relative;
+  }
+
+  .record-item-date {
+    font-size: 0.75rem;
+    color: rgba(26,20,16,0.4);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .record-type-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 500;
+  }
+
+  .badge-student { background: rgba(107,124,94,0.15); color: var(--sage); }
+  .badge-parent { background: rgba(201,150,58,0.15); color: #9a6f1e; }
+
+  .record-item-content {
+    font-size: 0.88rem;
+    line-height: 1.7;
+    color: var(--ink);
+    white-space: pre-wrap;
+  }
+
+  .record-delete {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: none;
+    border: none;
+    color: rgba(26,20,16,0.25);
+    cursor: pointer;
+    font-size: 1rem;
+    transition: color 0.2s;
+  }
+
+  .record-delete:hover { color: var(--red); }
+
+  /* 모달 */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(26,20,16,0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(2px);
+  }
+
+  .modal {
+    background: var(--paper);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(26,20,16,0.3);
+    animation: modalIn 0.25s ease;
+  }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .modal-header {
+    background: var(--ink);
+    padding: 20px 24px;
+    border-radius: 16px 16px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .modal-title {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--paper);
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    color: rgba(245,240,232,0.6);
+    font-size: 1.4rem;
+    cursor: pointer;
+    transition: color 0.2s;
+    line-height: 1;
+  }
+
+  .modal-close:hover { color: white; }
+
+  .modal-body { padding: 24px; }
+
+  .modal-footer {
+    padding: 0 24px 24px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  .btn-secondary {
+    padding: 12px 20px;
+    background: var(--cream);
+    border: 1.5px solid rgba(139,69,19,0.2);
+    border-radius: 8px;
+    font-family: 'Noto Serif KR', serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--ink);
+  }
+
+  .btn-secondary:hover { background: var(--paper); }
+
+  /* 빈 상태 */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: rgba(26,20,16,0.35);
+  }
+
+  .empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
+  .empty-state p { font-size: 0.88rem; line-height: 1.6; }
+
+  .sub-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1.5px solid rgba(139,69,19,0.12);
+    margin-bottom: 20px;
+  }
+
+  .sub-tab {
+    padding: 10px 18px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'Noto Serif KR', serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(26,20,16,0.4);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1.5px;
+    transition: all 0.2s;
+  }
+
+  .sub-tab.active {
+    color: var(--brush);
+    border-bottom-color: var(--brush);
+  }
+
+  .sub-panel { display: none; }
+  .sub-panel.active { display: block; }
+
+  /* Responsive */
+  @media (max-width: 700px) {
+    .counsel-layout { grid-template-columns: 1fr; }
+    .student-sidebar { max-height: 250px; }
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .form-row { grid-template-columns: 1fr; }
+    header { padding: 16px 20px; }
+    .tab-nav { padding: 0 16px; }
+    .main { padding: 24px 16px; }
+    .panel-title { font-size: 1.4rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">선생님의 <span>AI 비서</span></div>
+  <div class="header-right">
+    <span class="status-dot"></span>준비됨
+  </div>
+</header>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="showTab('lesson')"><span class="tab-icon">📚</span>수업 자료</button>
+  <button class="tab-btn" onclick="showTab('grade')"><span class="tab-icon">✏️</span>채점/피드백</button>
+  <button class="tab-btn" onclick="showTab('poem')"><span class="tab-icon">🌿</span>시 창작</button>
+  <button class="tab-btn" onclick="showTab('schedule')"><span class="tab-icon">📅</span>업무 정리</button>
+  <button class="tab-btn" onclick="showTab('stock')"><span class="tab-icon">📈</span>주식 분석</button>
+  <button class="tab-btn" onclick="showTab('counsel')"><span class="tab-icon">🫂</span>학생 상담</button>
+</nav>
+
+<main class="main">
+
+  <!-- API Key -->
+  <div class="api-section">
+    <h3>🔑 Claude API 키 설정</h3>
+    <p>Anthropic API 키를 입력하면 실제로 AI가 응답합니다. 키는 이 브라우저에만 저장되며 서버로 전송되지 않습니다.<br>
+    <a href="https://console.anthropic.com" target="_blank" style="color:var(--brush)">console.anthropic.com</a>에서 무료로 발급받을 수 있어요.</p>
+    <div class="api-input-row">
+      <input type="password" id="apiKey" placeholder="sk-ant-..." />
+      <button class="btn-save" onclick="saveKey()">저장</button>
+      <button class="btn-save" style="background:rgba(26,20,16,0.3)" onclick="deleteKey()">삭제</button>
+    </div>
+  </div>
+
+  <!-- 수업 자료 -->
+  <div id="panel-lesson" class="panel active">
+    <div class="panel-header">
+      <div class="panel-title">수업 자료 <span class="accent">자동 생성</span></div>
+      <div class="panel-desc">단원 정보를 입력하면 학습지, 퀴즈, 수업 개요를 자동으로 만들어 드려요.</div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>과목</label>
+        <input type="text" id="l-subject" placeholder="예: 국어, 수학, 영어..." />
+      </div>
+      <div class="form-group">
+        <label>학년</label>
+        <select id="l-grade">
+          <option value="">선택</option>
+          <option>초등 1~2학년</option>
+          <option>초등 3~4학년</option>
+          <option>초등 5~6학년</option>
+          <option>중학교 1학년</option>
+          <option>중학교 2학년</option>
+          <option>중학교 3학년</option>
+          <option>고등학교 1학년</option>
+          <option>고등학교 2학년</option>
+          <option>고등학교 3학년</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>단원 / 주제</label>
+      <input type="text" id="l-topic" placeholder="예: 조선 건국, 분수의 곱셈, 시의 운율..." />
+    </div>
+
+    <div class="form-group">
+      <label>생성할 자료 종류</label>
+      <div class="chip-group" id="material-chips">
+        <div class="chip selected" onclick="toggleChip(this)">수업 개요</div>
+        <div class="chip" onclick="toggleChip(this)">학습지 (빈칸채우기)</div>
+        <div class="chip" onclick="toggleChip(this)">퀴즈 5문항</div>
+        <div class="chip" onclick="toggleChip(this)">토론 질문</div>
+        <div class="chip" onclick="toggleChip(this)">핵심 용어 정리</div>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="runLesson()">
+      <span>✨</span> 자료 생성하기
+    </button>
+
+    <div class="result-box" id="lesson-result" style="display:none">
+      <div class="result-header">
+        <span class="result-title">생성된 수업 자료</span>
+        <button class="copy-btn" onclick="copyResult('lesson-content')">복사</button>
+      </div>
+      <div class="result-content" id="lesson-content">
+        <div class="result-placeholder">자료를 생성하면 여기에 표시됩니다</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 채점/피드백 -->
+  <div id="panel-grade" class="panel">
+    <div class="panel-header">
+      <div class="panel-title">채점 · <span class="accent">피드백 보조</span></div>
+      <div class="panel-desc">학생 글이나 답안을 붙여넣으면 루브릭 기반 피드백을 자동으로 작성해 드려요.</div>
+    </div>
+
+    <div class="form-group">
+      <label>평가 기준 / 루브릭 (선택)</label>
+      <input type="text" id="g-rubric" placeholder="예: 창의성, 논리성, 맞춤법 — 없으면 AI가 적절히 판단합니다" />
+    </div>
+
+    <div class="form-group">
+      <label>학생 답안 / 글</label>
+      <textarea id="g-student" placeholder="학생이 작성한 내용을 여기에 붙여넣으세요..."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>피드백 톤</label>
+      <div class="chip-group" id="tone-chips">
+        <div class="chip selected" onclick="selectOne(this, 'tone-chips')">따뜻하고 격려적</div>
+        <div class="chip" onclick="selectOne(this, 'tone-chips')">객관적·구체적</div>
+        <div class="chip" onclick="selectOne(this, 'tone-chips')">간결·직접적</div>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="runGrade()">
+      <span>📝</span> 피드백 생성
+    </button>
+
+    <div class="result-box" id="grade-result" style="display:none">
+      <div class="result-header">
+        <span class="result-title">피드백 결과</span>
+        <button class="copy-btn" onclick="copyResult('grade-content')">복사</button>
+      </div>
+      <div class="result-content" id="grade-content"></div>
+    </div>
+  </div>
+
+  <!-- 시 창작 -->
+  <div id="panel-poem" class="panel">
+    <div class="panel-header">
+      <div class="panel-title">시 <span class="accent">창작 도우미</span></div>
+      <div class="panel-desc">오늘의 감정과 소재를 알려주세요. 함께 시를 써 볼게요.</div>
+    </div>
+
+    <div class="form-group">
+      <label>오늘의 감정 / 상태</label>
+      <input type="text" id="p-mood" placeholder="예: 고요하다, 그리움, 기쁨, 피곤하지만 뿌듯함..." />
+    </div>
+
+    <div class="form-group">
+      <label>소재 / 이미지</label>
+      <input type="text" id="p-subject" placeholder="예: 교실 창문, 낙엽, 퇴근길, 오래된 책..." />
+    </div>
+
+    <div class="form-group">
+      <label>시의 형식</label>
+      <div class="chip-group" id="poem-chips">
+        <div class="chip selected" onclick="selectOne(this, 'poem-chips')">자유시</div>
+        <div class="chip" onclick="selectOne(this, 'poem-chips')">짧은 시 (10줄 이내)</div>
+        <div class="chip" onclick="selectOne(this, 'poem-chips')">서정시</div>
+        <div class="chip" onclick="selectOne(this, 'poem-chips')">하이쿠 스타일</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>추가 메모 (선택)</label>
+      <textarea id="p-note" placeholder="특별히 담고 싶은 말, 피하고 싶은 표현 등..." style="min-height:80px"></textarea>
+    </div>
+
+    <button class="btn-primary" onclick="runPoem()">
+      <span>🌿</span> 시 초고 만들기
+    </button>
+
+    <div class="result-box" id="poem-result" style="display:none">
+      <div class="result-header">
+        <span class="result-title">시 초고</span>
+        <button class="copy-btn" onclick="copyResult('poem-content')">복사</button>
+      </div>
+      <div class="poem-result" id="poem-content"></div>
+    </div>
+  </div>
+
+  <!-- 업무 정리 -->
+  <div id="panel-schedule" class="panel">
+    <div class="panel-header">
+      <div class="panel-title">업무 · <span class="accent">일정 정리</span></div>
+      <div class="panel-desc">오늘 할 일이나 혼란스러운 업무를 던져주세요. 정리해 드립니다.</div>
+    </div>
+
+    <div class="form-group">
+      <label>오늘 해야 할 일 / 업무 메모</label>
+      <textarea id="s-tasks" placeholder="예: 3학년 시험지 채점, 학부모 상담 연락, 행정업무 처리, 수업 준비, 교직원 회의 자료..." style="min-height:160px"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>원하는 결과</label>
+      <div class="chip-group" id="schedule-chips">
+        <div class="chip selected" onclick="toggleChip(this)">우선순위 정리</div>
+        <div class="chip" onclick="toggleChip(this)">시간 블록 배분</div>
+        <div class="chip" onclick="toggleChip(this)">빠른 처리 방법 조언</div>
+        <div class="chip" onclick="toggleChip(this)">이메일/공문 초안</div>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="runSchedule()">
+      <span>🗂️</span> 정리해 주세요
+    </button>
+
+    <div class="result-box" id="schedule-result" style="display:none">
+      <div class="result-header">
+        <span class="result-title">업무 정리 결과</span>
+        <button class="copy-btn" onclick="copyResult('schedule-content')">복사</button>
+      </div>
+      <div class="result-content" id="schedule-content"></div>
+    </div>
+  </div>
+
+  <!-- 주식 분석 -->
+  <div id="panel-stock" class="panel">
+    <div class="panel-header">
+      <div class="panel-title">주식 <span class="accent">분석 보조</span></div>
+      <div class="panel-desc">종목이나 투자 상황을 설명해 주세요. AI가 다양한 관점에서 분석해 드립니다.</div>
+    </div>
+
+    <div class="form-group">
+      <label>종목명 또는 티커</label>
+      <input type="text" id="st-ticker" placeholder="예: 삼성전자, 005930, AAPL, 엔비디아..." />
+    </div>
+
+    <div class="form-group">
+      <label>분석 요청 내용</label>
+      <textarea id="st-query" placeholder="예: 이 종목을 지금 사도 될까요? 최근 실적이 궁금해요. 적정 매수 시점을 알고 싶어요..." style="min-height:120px"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>분석 관점</label>
+      <div class="chip-group" id="stock-chips">
+        <div class="chip selected" onclick="toggleChip(this)">기본 분석 (펀더멘털)</div>
+        <div class="chip" onclick="toggleChip(this)">기술적 분석 관점</div>
+        <div class="chip" onclick="toggleChip(this)">리스크 요인</div>
+        <div class="chip" onclick="toggleChip(this)">투자 전략 조언</div>
+      </div>
+    </div>
+
+    <div class="warning-box">
+      ⚠️ AI의 분석은 참고용입니다. 실제 투자 결정은 본인의 판단과 책임 하에 이루어져야 합니다. 실시간 주가 데이터는 포함되지 않습니다.
+    </div>
+
+    <button class="btn-primary" style="margin-top:20px" onclick="runStock()">
+      <span>🔍</span> 분석 시작
+    </button>
+
+    <div class="result-box" id="stock-result" style="display:none">
+      <div class="result-header">
+        <span class="result-title">주식 분석 결과</span>
+        <button class="copy-btn" onclick="copyResult('stock-content')">복사</button>
+      </div>
+      <div class="result-content" id="stock-content"></div>
+    </div>
+  </div>
+
+  <!-- 학생 상담 -->
+  <div id="panel-counsel" class="panel">
+    <div class="panel-header">
+      <div class="panel-title">학생 <span class="accent">상담 관리</span></div>
+      <div class="panel-desc">학생 정보와 상담 기록을 저장하고, AI로 학부모 상담 자료를 자동 생성합니다.</div>
+    </div>
+
+    <div class="counsel-layout">
+      <!-- 왼쪽: 학생 목록 -->
+      <div class="student-sidebar">
+        <div class="sidebar-header">
+          <span class="sidebar-title">학생 목록</span>
+          <button class="btn-add-student" onclick="openAddStudent()" title="학생 추가">+</button>
+        </div>
+        <div class="student-search">
+          <input type="text" id="student-search-input" placeholder="이름 검색..." oninput="filterStudents()" />
+        </div>
+        <div class="student-list" id="student-list">
+          <div class="empty-state">
+            <div class="empty-icon">👤</div>
+            <p>+ 버튼으로<br>학생을 추가하세요</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 오른쪽: 상담 상세 -->
+      <div class="counsel-detail" id="counsel-detail">
+        <div class="empty-state" style="margin: auto; padding: 80px 20px;">
+          <div class="empty-icon">🫂</div>
+          <p>왼쪽에서 학생을 선택하거나<br>새 학생을 추가하세요</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- 학생 추가/편집 모달 -->
+<div class="modal-overlay" id="modal-student" style="display:none" onclick="closeModalOverlay(event,'modal-student')">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-student-title">학생 추가</span>
+      <button class="modal-close" onclick="closeModal('modal-student')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>이름 *</label>
+          <input type="text" id="s-name" placeholder="홍길동" />
+        </div>
+        <div class="form-group">
+          <label>학번/번호</label>
+          <input type="text" id="s-number" placeholder="예: 3-2 / 15번" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>학년/반</label>
+          <input type="text" id="s-class" placeholder="예: 3학년 2반" />
+        </div>
+        <div class="form-group">
+          <label>보호자 연락처</label>
+          <input type="text" id="s-parent-tel" placeholder="010-0000-0000" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>학생 특성 / 기본 메모</label>
+        <textarea id="s-memo" placeholder="학습 특성, 성격, 주의사항 등 기본 정보를 적어두세요..." style="min-height:90px"></textarea>
+      </div>
+      <div class="form-group">
+        <label>주요 관심사/강점</label>
+        <input type="text" id="s-strength" placeholder="예: 수학 우수, 미술 좋아함, 리더십 있음..." />
+      </div>
+      <div class="form-group">
+        <label>주의 관찰 사항</label>
+        <input type="text" id="s-concern" placeholder="예: 주의력 부족, 교우관계 어려움, 가정환경 특이사항..." />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modal-student')">취소</button>
+      <button class="btn-primary" onclick="saveStudent()">💾 저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 상담 기록 추가 모달 -->
+<div class="modal-overlay" id="modal-record" style="display:none" onclick="closeModalOverlay(event,'modal-record')">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">상담 기록 추가</span>
+      <button class="modal-close" onclick="closeModal('modal-record')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>상담 날짜</label>
+          <input type="date" id="r-date" />
+        </div>
+        <div class="form-group">
+          <label>상담 유형</label>
+          <select id="r-type">
+            <option value="student">학생 상담</option>
+            <option value="parent">학부모 상담</option>
+            <option value="phone">전화 상담</option>
+            <option value="etc">기타</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>상담 주제</label>
+        <input type="text" id="r-topic" placeholder="예: 학습 부진, 교우관계, 진로 고민, 가정환경..." />
+      </div>
+      <div class="form-group">
+        <label>상담 내용</label>
+        <textarea id="r-content" placeholder="상담에서 나온 주요 내용, 학생/학부모 반응, 특이사항 등..." style="min-height:130px"></textarea>
+      </div>
+      <div class="form-group">
+        <label>후속 조치 / 다음 계획</label>
+        <textarea id="r-followup" placeholder="다음 상담 일정, 담임 조치 사항, 연계 기관 등..." style="min-height:70px"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modal-record')">취소</button>
+      <button class="btn-primary" onclick="saveRecord()">💾 기록 저장</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let apiKey = '';
+
+function saveKey() {
+  apiKey = document.getElementById('apiKey').value.trim();
+  if (apiKey) {
+    localStorage.setItem('teacher-api-key', apiKey);
+    alert('✅ API 키가 저장되었습니다! 다음부터 자동으로 불러옵니다.');
+  }
+}
+
+// 페이지 로드 시 저장된 키 자동 불러오기
+const _savedKey = localStorage.getItem('teacher-api-key');
+if (_savedKey) {
+  apiKey = _savedKey;
+  document.getElementById('apiKey').value = _savedKey;
+}
+
+function deleteKey() {
+  if (!confirm('저장된 API 키를 삭제할까요?')) return;
+  localStorage.removeItem('teacher-api-key');
+  apiKey = '';
+  document.getElementById('apiKey').value = '';
+  alert('🗑️ API 키가 삭제되었습니다.');
+}
+
+function showTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function toggleChip(el) {
+  el.classList.toggle('selected');
+}
+
+function selectOne(el, groupId) {
+  document.querySelectorAll('#' + groupId + ' .chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function getSelectedChips(groupId) {
+  return Array.from(document.querySelectorAll('#' + groupId + ' .chip.selected')).map(c => c.textContent.trim());
+}
+
+async function callClaude(systemPrompt, userPrompt, resultEl, boxEl, isPoem = false) {
+  if (!apiKey) {
+    alert('API 키를 먼저 입력해주세요!');
+    return;
+  }
+
+  boxEl.style.display = 'block';
+  resultEl.innerHTML = `<div style="padding:30px;text-align:center"><div class="loading-dots"><span></span><span></span><span></span></div><br><small style="color:rgba(26,20,16,0.4)">AI가 생성 중입니다...</small></div>`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-6',
+        max_tokens: 2000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }]
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error?.message || '오류가 발생했습니다');
+    }
+
+    const data = await response.json();
+    const text = data.content[0].text;
+    resultEl.textContent = text;
+    if (isPoem) {
+      resultEl.style.whiteSpace = 'pre-wrap';
+    }
+  } catch (e) {
+    resultEl.textContent = '❌ 오류: ' + e.message + '\n\nAPI 키를 확인해주세요.';
+  }
+}
+
+function runLesson() {
+  const subject = document.getElementById('l-subject').value;
+  const grade = document.getElementById('l-grade').value;
+  const topic = document.getElementById('l-topic').value;
+  const materials = getSelectedChips('material-chips');
+
+  if (!topic) { alert('단원/주제를 입력해주세요'); return; }
+
+  const system = `당신은 한국의 숙련된 교사를 돕는 교육 전문 AI입니다. 
+실제 수업에서 바로 사용할 수 있는 실용적이고 완성도 높은 교육 자료를 만들어 주세요.
+한국 교육과정 맥락에 맞게 작성하고, 마크다운보다 일반 텍스트로 깔끔하게 작성해 주세요.`;
+
+  const user = `다음 정보로 수업 자료를 만들어 주세요:
+- 과목: ${subject || '미지정'}
+- 학년: ${grade || '미지정'}  
+- 단원/주제: ${topic}
+- 생성할 자료: ${materials.join(', ')}
+
+각 자료 종류를 구분해서 작성해 주세요.`;
+
+  callClaude(system, user,
+    document.getElementById('lesson-content'),
+    document.getElementById('lesson-result'));
+}
+
+function runGrade() {
+  const rubric = document.getElementById('g-rubric').value;
+  const student = document.getElementById('g-student').value;
+  const tone = getSelectedChips('tone-chips')[0] || '따뜻하고 격려적';
+
+  if (!student) { alert('학생 답안을 입력해주세요'); return; }
+
+  const system = `당신은 한국 교사를 돕는 교육 평가 전문 AI입니다.
+학생의 성장을 돕는 건설적이고 구체적인 피드백을 작성합니다.
+피드백 톤: ${tone}
+형식: 잘한 점 → 개선할 점 → 종합 평가 순으로 작성`;
+
+  const user = `다음 학생의 답안에 피드백을 작성해 주세요.
+${rubric ? `평가 기준: ${rubric}\n` : ''}
+학생 답안:
+${student}`;
+
+  callClaude(system, user,
+    document.getElementById('grade-content'),
+    document.getElementById('grade-result'));
+}
+
+function runPoem() {
+  const mood = document.getElementById('p-mood').value;
+  const subject = document.getElementById('p-subject').value;
+  const form = getSelectedChips('poem-chips')[0] || '자유시';
+  const note = document.getElementById('p-note').value;
+
+  if (!mood && !subject) { alert('감정이나 소재를 입력해주세요'); return; }
+
+  const system = `당신은 한국 현대시를 전문으로 하는 시인 겸 문학 교사입니다.
+시를 쓰고 싶은 50대 교사를 위해 진정성 있는 시 초고를 써 주세요.
+일상의 소소함에서 깊이를 찾는 서정적이고 따뜻한 시풍을 추구하세요.
+과도한 수사나 진부한 표현은 피하고, 독자적인 이미지와 언어를 사용하세요.`;
+
+  const user = `다음 내용을 바탕으로 ${form} 형식의 시 초고를 써 주세요.
+감정/상태: ${mood || ''}
+소재/이미지: ${subject || ''}
+${note ? `추가 메모: ${note}` : ''}
+
+시만 출력해 주세요. 제목도 붙여 주세요.`;
+
+  callClaude(system, user,
+    document.getElementById('poem-content'),
+    document.getElementById('poem-result'), true);
+}
+
+function runSchedule() {
+  const tasks = document.getElementById('s-tasks').value;
+  const wants = getSelectedChips('schedule-chips');
+
+  if (!tasks) { alert('할 일을 입력해주세요'); return; }
+
+  const system = `당신은 바쁜 교사를 위한 업무 관리 전문 AI입니다.
+교사의 현실적인 업무 환경을 이해하고, 실질적으로 도움이 되는 조언을 제공합니다.
+과도한 설명 없이 핵심을 명확하게 정리해 주세요.`;
+
+  const user = `다음 업무를 정리해 주세요:
+${tasks}
+
+요청 사항: ${wants.join(', ')}`;
+
+  callClaude(system, user,
+    document.getElementById('schedule-content'),
+    document.getElementById('schedule-result'));
+}
+
+function runStock() {
+  const ticker = document.getElementById('st-ticker').value;
+  const query = document.getElementById('st-query').value;
+  const aspects = getSelectedChips('stock-chips');
+
+  if (!query) { alert('분석 요청 내용을 입력해주세요'); return; }
+
+  const system = `당신은 투자 분석을 도와주는 AI입니다.
+중요: 실시간 주가 데이터는 없으므로 일반적인 분석 프레임워크와 판단 기준을 제공합니다.
+투자 결정은 사용자 본인이 해야 함을 항상 명시하세요.
+균형 잡힌 시각으로 장단점을 함께 제시해 주세요.`;
+
+  const user = `종목: ${ticker || '미지정'}
+질문: ${query}
+분석 관점: ${aspects.join(', ')}
+
+위 내용을 분석해 주세요. 투자 결정은 본인 책임임을 상기시켜 주세요.`;
+
+  callClaude(system, user,
+    document.getElementById('stock-content'),
+    document.getElementById('stock-result'));
+}
+
+function copyResult(id) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = event.target;
+    btn.textContent = '복사됨 ✓';
+    setTimeout(() => btn.textContent = '복사', 2000);
+  });
+}
+
+/* =============================================
+   학생 상담 관리 시스템
+   데이터 구조:
+   - students: { id: { name, number, class, parentTel, memo, strength, concern, createdAt } }
+   - records:  { studentId: [ { id, date, type, topic, content, followup } ] }
+   ============================================= */
+
+let students = {};
+let counselRecords = {};
+let currentStudentId = null;
+let editingStudentId = null;
+
+const STUDENTS_KEY = 'teacher-students';
+const RECORDS_KEY = 'teacher-records';
+
+// 초기 로드
+async function loadCounselData() {
+  try {
+    const sResult = await window.storage.get(STUDENTS_KEY);
+    if (sResult) students = JSON.parse(sResult.value);
+  } catch(e) { students = {}; }
+  try {
+    const rResult = await window.storage.get(RECORDS_KEY);
+    if (rResult) counselRecords = JSON.parse(rResult.value);
+  } catch(e) { counselRecords = {}; }
+  renderStudentList();
+}
+
+async function saveStudentsToStorage() {
+  try { await window.storage.set(STUDENTS_KEY, JSON.stringify(students)); } catch(e) {}
+}
+
+async function saveRecordsToStorage() {
+  try { await window.storage.set(RECORDS_KEY, JSON.stringify(counselRecords)); } catch(e) {}
+}
+
+function genId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+/* -- 학생 목록 렌더링 -- */
+function renderStudentList(filter = '') {
+  const list = document.getElementById('student-list');
+  const ids = Object.keys(students).filter(id => {
+    const s = students[id];
+    return !filter || s.name.includes(filter) || (s.sClass || '').includes(filter);
+  });
+
+  if (ids.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">👤</div><p>+ 버튼으로<br>학생을 추가하세요</p></div>`;
+    return;
+  }
+
+  list.innerHTML = ids.map(id => {
+    const s = students[id];
+    const recordCount = (counselRecords[id] || []).length;
+    const isActive = id === currentStudentId;
+    return `<div class="student-card ${isActive ? 'active' : ''}" onclick="selectStudent('${id}')">
+      <div class="student-card-name">${s.name}${recordCount > 0 ? `<span class="student-card-badge">${recordCount}건</span>` : ''}</div>
+      <div class="student-card-meta">${s.sClass || ''}${s.number ? ' · ' + s.number : ''}</div>
+    </div>`;
+  }).join('');
+}
+
+function filterStudents() {
+  const q = document.getElementById('student-search-input').value.trim();
+  renderStudentList(q);
+}
+
+/* -- 학생 선택 -- */
+function selectStudent(id) {
+  currentStudentId = id;
+  renderStudentList(document.getElementById('student-search-input').value.trim());
+  renderCounselDetail();
+}
+
+/* -- 상담 상세 영역 렌더링 -- */
+function renderCounselDetail() {
+  const detail = document.getElementById('counsel-detail');
+  if (!currentStudentId || !students[currentStudentId]) {
+    detail.innerHTML = `<div class="empty-state" style="margin:auto;padding:80px 20px"><div class="empty-icon">🫂</div><p>학생을 선택하세요</p></div>`;
+    return;
+  }
+  const s = students[currentStudentId];
+  const records = counselRecords[currentStudentId] || [];
+
+  detail.innerHTML = `
+    <!-- 학생 기본 정보 카드 -->
+    <div class="detail-card">
+      <div class="detail-card-header">
+        <span class="detail-card-title">👤 ${s.name} 학생 정보</span>
+        <div style="display:flex;gap:8px">
+          <button class="btn-secondary" style="padding:6px 14px;font-size:0.78rem" onclick="openEditStudent('${currentStudentId}')">✏️ 편집</button>
+          <button class="btn-secondary" style="padding:6px 14px;font-size:0.78rem;color:var(--red)" onclick="deleteStudent('${currentStudentId}')">삭제</button>
+        </div>
+      </div>
+      <div class="detail-card-body">
+        <div class="form-row" style="gap:12px;margin-bottom:0">
+          <div><small style="color:rgba(26,20,16,0.5);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.03em">학년/반</small><div style="font-size:0.9rem;margin-top:4px">${s.sClass || '-'}</div></div>
+          <div><small style="color:rgba(26,20,16,0.5);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.03em">번호</small><div style="font-size:0.9rem;margin-top:4px">${s.number || '-'}</div></div>
+          <div><small style="color:rgba(26,20,16,0.5);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.03em">보호자 연락처</small><div style="font-size:0.9rem;margin-top:4px">${s.parentTel || '-'}</div></div>
+        </div>
+        ${s.strength ? `<div style="margin-top:14px"><small style="color:var(--sage);font-size:0.75rem;font-weight:600">✅ 강점/관심사</small><div style="font-size:0.88rem;margin-top:4px;line-height:1.6">${s.strength}</div></div>` : ''}
+        ${s.concern ? `<div style="margin-top:10px"><small style="color:#c0392b;font-size:0.75rem;font-weight:600">⚠️ 주의 관찰 사항</small><div style="font-size:0.88rem;margin-top:4px;line-height:1.6">${s.concern}</div></div>` : ''}
+        ${s.memo ? `<div style="margin-top:10px"><small style="color:rgba(26,20,16,0.5);font-size:0.75rem">📝 메모</small><div style="font-size:0.88rem;margin-top:4px;line-height:1.7;white-space:pre-wrap">${s.memo}</div></div>` : ''}
+      </div>
+    </div>
+
+    <!-- 상담 기록 -->
+    <div class="detail-card">
+      <div class="detail-card-header">
+        <span class="detail-card-title">📋 상담 기록 (${records.length}건)</span>
+        <button class="btn-secondary" style="padding:6px 14px;font-size:0.78rem" onclick="openAddRecord()">+ 기록 추가</button>
+      </div>
+      <div class="detail-card-body">
+        ${records.length === 0
+          ? `<div class="empty-state" style="padding:30px"><div class="empty-icon" style="font-size:1.8rem">📝</div><p>아직 상담 기록이 없습니다</p></div>`
+          : `<div class="record-list">${records.slice().reverse().map(r => `
+            <div class="record-item">
+              <button class="record-delete" onclick="deleteRecord('${currentStudentId}','${r.id}')">×</button>
+              <div class="record-item-date">
+                ${r.date || '날짜 미지정'}
+                <span class="record-type-badge ${r.type === 'parent' ? 'badge-parent' : 'badge-student'}">${getTypeLabel(r.type)}</span>
+                ${r.topic ? `<span style="color:rgba(26,20,16,0.6);font-size:0.75rem">· ${r.topic}</span>` : ''}
+              </div>
+              <div class="record-item-content">${r.content || ''}</div>
+              ${r.followup ? `<div style="margin-top:8px;padding:8px 10px;background:rgba(107,124,94,0.08);border-radius:6px;font-size:0.82rem;color:var(--sage);line-height:1.6">→ ${r.followup}</div>` : ''}
+            </div>`).join('')}
+          </div>`
+        }
+      </div>
+    </div>
+
+    <!-- AI 학부모 상담 자료 생성 -->
+    <div class="detail-card">
+      <div class="detail-card-header">
+        <span class="detail-card-title">🤖 AI 학부모 상담 자료 생성</span>
+      </div>
+      <div class="detail-card-body">
+        <div class="form-group">
+          <label>이번 상담 목적 / 주요 안건</label>
+          <textarea id="parent-agenda" placeholder="예: 학습 부진 원인 파악, 생활 태도 개선, 진로 방향 논의, 긍정적 변화 공유..." style="min-height:80px"></textarea>
+        </div>
+        <div class="form-group">
+          <label>상담 방식</label>
+          <div class="chip-group" id="parent-mode-chips">
+            <div class="chip selected" onclick="selectOne(this,'parent-mode-chips')">대면 상담</div>
+            <div class="chip" onclick="selectOne(this,'parent-mode-chips')">전화 상담</div>
+            <div class="chip" onclick="selectOne(this,'parent-mode-chips')">가정통신문</div>
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label>포함할 내용</label>
+          <div class="chip-group" id="parent-include-chips">
+            <div class="chip selected" onclick="toggleChip(this)">학생 현황 요약</div>
+            <div class="chip selected" onclick="toggleChip(this)">상담 기록 반영</div>
+            <div class="chip" onclick="toggleChip(this)">가정 협조 요청사항</div>
+            <div class="chip" onclick="toggleChip(this)">앞으로의 지원 계획</div>
+            <div class="chip" onclick="toggleChip(this)">긍정적 변화 강조</div>
+          </div>
+        </div>
+        <button class="btn-primary" style="margin-top:20px" onclick="runParentCounsel()">
+          <span>✨</span> 학부모 상담 자료 생성
+        </button>
+        <div id="parent-result-box" style="display:none;margin-top:20px">
+          <div class="result-box" style="margin-top:0">
+            <div class="result-header">
+              <span class="result-title">생성된 학부모 상담 자료</span>
+              <button class="copy-btn" onclick="copyResult('parent-result-content')">복사</button>
+            </div>
+            <div class="result-content" id="parent-result-content"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function getTypeLabel(type) {
+  const map = { student: '학생 상담', parent: '학부모 상담', phone: '전화 상담', etc: '기타' };
+  return map[type] || type;
+}
+
+/* -- 모달 -- */
+function openAddStudent() {
+  editingStudentId = null;
+  document.getElementById('modal-student-title').textContent = '학생 추가';
+  ['s-name','s-number','s-class','s-parent-tel','s-memo','s-strength','s-concern'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('modal-student').style.display = 'flex';
+}
+
+function openEditStudent(id) {
+  editingStudentId = id;
+  const s = students[id];
+  document.getElementById('modal-student-title').textContent = '학생 정보 편집';
+  document.getElementById('s-name').value = s.name || '';
+  document.getElementById('s-number').value = s.number || '';
+  document.getElementById('s-class').value = s.sClass || '';
+  document.getElementById('s-parent-tel').value = s.parentTel || '';
+  document.getElementById('s-memo').value = s.memo || '';
+  document.getElementById('s-strength').value = s.strength || '';
+  document.getElementById('s-concern').value = s.concern || '';
+  document.getElementById('modal-student').style.display = 'flex';
+}
+
+function openAddRecord() {
+  document.getElementById('r-date').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('r-type').value = 'student';
+  document.getElementById('r-topic').value = '';
+  document.getElementById('r-content').value = '';
+  document.getElementById('r-followup').value = '';
+  document.getElementById('modal-record').style.display = 'flex';
+}
+
+function closeModal(id) {
+  document.getElementById(id).style.display = 'none';
+}
+
+function closeModalOverlay(e, id) {
+  if (e.target === e.currentTarget) closeModal(id);
+}
+
+async function saveStudent() {
+  const name = document.getElementById('s-name').value.trim();
+  if (!name) { alert('이름을 입력해주세요'); return; }
+
+  const data = {
+    name,
+    number: document.getElementById('s-number').value.trim(),
+    sClass: document.getElementById('s-class').value.trim(),
+    parentTel: document.getElementById('s-parent-tel').value.trim(),
+    memo: document.getElementById('s-memo').value.trim(),
+    strength: document.getElementById('s-strength').value.trim(),
+    concern: document.getElementById('s-concern').value.trim(),
+    createdAt: editingStudentId ? (students[editingStudentId]?.createdAt || Date.now()) : Date.now()
+  };
+
+  const id = editingStudentId || genId();
+  students[id] = data;
+  await saveStudentsToStorage();
+  closeModal('modal-student');
+  currentStudentId = id;
+  renderStudentList();
+  renderCounselDetail();
+}
+
+async function deleteStudent(id) {
+  if (!confirm(`${students[id]?.name} 학생의 모든 정보와 상담 기록을 삭제할까요?`)) return;
+  delete students[id];
+  delete counselRecords[id];
+  if (currentStudentId === id) currentStudentId = null;
+  await saveStudentsToStorage();
+  await saveRecordsToStorage();
+  renderStudentList();
+  renderCounselDetail();
+}
+
+async function saveRecord() {
+  if (!currentStudentId) return;
+  const content = document.getElementById('r-content').value.trim();
+  if (!content) { alert('상담 내용을 입력해주세요'); return; }
+
+  const record = {
+    id: genId(),
+    date: document.getElementById('r-date').value,
+    type: document.getElementById('r-type').value,
+    topic: document.getElementById('r-topic').value.trim(),
+    content,
+    followup: document.getElementById('r-followup').value.trim()
+  };
+
+  if (!counselRecords[currentStudentId]) counselRecords[currentStudentId] = [];
+  counselRecords[currentStudentId].push(record);
+  await saveRecordsToStorage();
+  closeModal('modal-record');
+  renderStudentList(document.getElementById('student-search-input').value.trim());
+  renderCounselDetail();
+}
+
+async function deleteRecord(studentId, recordId) {
+  if (!confirm('이 상담 기록을 삭제할까요?')) return;
+  counselRecords[studentId] = (counselRecords[studentId] || []).filter(r => r.id !== recordId);
+  await saveRecordsToStorage();
+  renderStudentList(document.getElementById('student-search-input').value.trim());
+  renderCounselDetail();
+}
+
+/* -- AI 학부모 상담 자료 생성 -- */
+async function runParentCounsel() {
+  if (!currentStudentId) return;
+  const s = students[currentStudentId];
+  const records = (counselRecords[currentStudentId] || []);
+  const agenda = document.getElementById('parent-agenda').value.trim();
+  const mode = getSelectedChips('parent-mode-chips')[0] || '대면 상담';
+  const includes = getSelectedChips('parent-include-chips');
+
+  if (!apiKey) { alert('API 키를 먼저 입력해주세요!'); return; }
+
+  const resultBox = document.getElementById('parent-result-box');
+  const resultEl = document.getElementById('parent-result-content');
+  resultBox.style.display = 'block';
+  resultEl.innerHTML = `<div style="padding:30px;text-align:center"><div class="loading-dots"><span></span><span></span><span></span></div><br><small>AI가 학부모 상담 자료를 작성 중입니다...</small></div>`;
+
+  const recordSummary = records.length > 0
+    ? records.slice(-5).map(r => `[${r.date} · ${getTypeLabel(r.type)}] ${r.topic ? r.topic + ' — ' : ''}${r.content}${r.followup ? '\n→ 조치: ' + r.followup : ''}`).join('\n\n')
+    : '이전 상담 기록 없음';
+
+  const system = `당신은 한국의 경험 많은 담임교사입니다. 학부모와의 상담을 위한 자료를 작성합니다.
+따뜻하고 전문적인 어조로, 학생의 성장과 발전에 초점을 맞춰 작성하세요.
+상담 방식: ${mode}
+포함 내용: ${includes.join(', ')}`;
+
+  const user = `다음 학생의 학부모 상담 자료를 작성해 주세요.
+
+[학생 기본 정보]
+이름: ${s.name}
+학년/반: ${s.sClass || '미지정'}
+강점/관심사: ${s.strength || '없음'}
+주의 관찰 사항: ${s.concern || '없음'}
+특이사항: ${s.memo || '없음'}
+
+[최근 상담 기록]
+${recordSummary}
+
+[이번 상담 안건]
+${agenda || '전반적인 학생 현황 공유'}
+
+위 정보를 바탕으로 실제 상담에서 바로 활용할 수 있는 완성도 높은 자료를 작성해주세요.`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-6',
+        max_tokens: 2000,
+        system,
+        messages: [{ role: 'user', content: user }]
+      })
+    });
+    const data = await response.json();
+    resultEl.textContent = data.content[0].text;
+  } catch(e) {
+    resultEl.textContent = '❌ 오류: ' + e.message;
+  }
+}
+
+// 상담 탭 진입 시 데이터 로드
+document.querySelector('[onclick="showTab(\'counsel\')"]').addEventListener('click', () => {
+  if (Object.keys(students).length === 0) loadCounselData();
+});
+
+// 초기 실행
+loadCounselData();
+</script>
+</body>
+</html>
